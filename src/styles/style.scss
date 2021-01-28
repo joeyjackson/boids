@@ -1,0 +1,16 @@
+$bg-color: #283747;
+$txt-color: white;
+
+body {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+  background-color: $bg-color;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
