@@ -3,45 +3,46 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   context: path.resolve(__dirname),
-  mode: 'production',
+  mode: "development",
   entry: "./src/index.ts",
   output: {
-    filename: "bundle.js",
+    filename: "index.bundle.js",
     path: path.resolve(__dirname, "dist")
+  },
+  devServer: {
+    contentBase: path.resolve(__dirname, "dist"),
+    hot: true,
+    port: 9000
   },
   module: {
     rules: [
       {
-        test: /\.s[ac]ss$/i,
+        test: /\.ts$/,
         use: [
-          // Creates `style` nodes from JS strings
-          "style-loader",
-          // Translates CSS into CommonJS
-          "css-loader",
-          // Compiles Sass to CSS
-          "sass-loader",
+          {
+            loader: "ts-loader"
+          }
         ],
+        exclude: /node_modules/
       },
       {
-        test: /\.ts$/,
-        use: "ts-loader",
-        exclude: /node_modules/,
+        test: /\.scss$/i,
+        use: [
+          "style-loader",
+          "css-loader",
+          "sass-loader",
+        ]
       }
     ]
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
-  },
-  devServer: {
-    index: "index.html",
-    contentBase: path.join(__dirname, "dist"),
-    port: 9000
+    extensions: [".tsx", ".ts", ".js"]
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, "public/index.html"),
+      template: path.resolve(__dirname, "public", "index.html"),
+      favicon: path.resolve(__dirname, "public", "favicon.ico"),
       inject: "body",
-      favicon: path.join(__dirname, "public/favicon.ico")
     })
   ]
 }

@@ -2,33 +2,41 @@ import P5 from "p5";
 import Circle from "./Circle";
 import "./styles/style.scss";
 
-// Creating the sketch itself
 const sketch = (p5: P5) => {
-	// DEMO: Prepare an array of MyCircle instances
-	const myCircles: Circle[] = [];
+  const circles: Circle[] = [];
+  const maxCircles = 12;
+  let currCircle: number = 0;
+  let interval;
 
-	// The sketch setup method 
 	p5.setup = () => {
-		// Creating and positioning the canvas
-		const canvas = p5.createCanvas(200, 200);
-		canvas.parent("app");
-
-		// Configuring the canvas
+		const canvas = p5.createCanvas(400, 400);
+		canvas.parent("canvas");
 		p5.background("white");
 
-		// DEMO: Create three circles in the center of the canvas
-		for (let i = 1; i < 4; i++) {
-			const p = p5.width / 4;
-			const circlePos = p5.createVector(p * i, p5.height / 2);
-			const size = i % 2 !== 0 ? 24 : 32;
-			myCircles.push(new Circle(p5, circlePos, size));
-		}
+		for (let i = 0; i < maxCircles; i++) {
+			const centerX = p5.width / 2;
+      const centerY = p5.height / 2;
+      
+      const radius = p5.height / 3;
+
+			const circlePos = p5.createVector(
+        centerX + radius * Math.cos(i / maxCircles * 2 * Math.PI), 
+        centerY + radius * Math.sin(i / maxCircles * 2 * Math.PI)
+      );
+			const size = 30;
+      
+      circles.push(new Circle(p5, circlePos, size));
+    }
+    
+    interval = setInterval(() => {
+      circles[currCircle].toggle();
+      currCircle = (currCircle + 1) % maxCircles;
+    }, 100);
 	};
 
-	// The sketch draw method
 	p5.draw = () => {
-		// DEMO: Let the circle instances draw themselves
-		myCircles.forEach(circle => circle.draw());
+    p5.background(255);
+		circles.forEach(circle => circle.draw());
 	};
 };
 

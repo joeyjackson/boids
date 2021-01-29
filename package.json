@@ -2,10 +2,10 @@
   "name": "boids",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "build": "webpack",
-    "dev": "webpack serve"
+    "build": "webpack --mode=production",
+    "start:dev": "webpack serve"
   },
   "repository": {
     "type": "git",
