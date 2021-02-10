@@ -1,43 +1,33 @@
 import P5 from "p5";
-import Circle from "./Circle";
+import Boid from "./Boid";
+import Flock from "./Flock";
 import "./styles/style.scss";
 
 const sketch = (p5: P5) => {
-  const circles: Circle[] = [];
-  const maxCircles = 12;
-  let currCircle: number = 0;
-  let interval;
+  const flock: Flock = new Flock(p5);
+  const NUM_BOIDS = 12;
+  const WIDTH = 800;
+  const HEIGHT = 500;
 
 	p5.setup = () => {
-		const canvas = p5.createCanvas(400, 400);
-		canvas.parent("canvas");
-		p5.background("white");
+		const canvas = p5.createCanvas(WIDTH, HEIGHT);
+    canvas.parent("canvas");
 
-		for (let i = 0; i < maxCircles; i++) {
-			const centerX = p5.width / 2;
-      const centerY = p5.height / 2;
-      
-      const radius = p5.height / 3;
-
-			const circlePos = p5.createVector(
-        centerX + radius * Math.cos(i / maxCircles * 2 * Math.PI), 
-        centerY + radius * Math.sin(i / maxCircles * 2 * Math.PI)
-      );
-			const size = 30;
-      
-      circles.push(new Circle(p5, circlePos, size));
+		for (let i = 0; i < NUM_BOIDS; i++) {
+      const boid = new Boid(p5, flock, p5.createVector(p5.random(0, WIDTH), p5.random(0, HEIGHT)));
+			flock.addBoid(boid);
     }
-    
-    interval = setInterval(() => {
-      circles[currCircle].toggle();
-      currCircle = (currCircle + 1) % maxCircles;
-    }, 100);
 	};
 
 	p5.draw = () => {
     p5.background(255);
-		circles.forEach(circle => circle.draw());
-	};
+		flock.update();
+		flock.show();
+  };
+  
+  p5.mousePressed = () => {
+    flock.setTarget(p5.createVector(p5.mouseX, p5.mouseY));
+  }
 };
 
 new P5(sketch);
