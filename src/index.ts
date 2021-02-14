@@ -5,7 +5,7 @@ import "./styles/style.scss";
 
 const sketch = (p5: P5) => {
   const flock: Flock = new Flock(p5);
-  const NUM_BOIDS = 12;
+  const NUM_BOIDS = 120;
   const WIDTH = 800;
   const HEIGHT = 500;
 
@@ -20,13 +20,19 @@ const sketch = (p5: P5) => {
 	};
 
 	p5.draw = () => {
-    p5.background(255);
+    p5.background(18, 185, 227);
 		flock.update();
 		flock.show();
   };
   
   p5.mousePressed = () => {
     flock.setTarget(p5.createVector(p5.mouseX, p5.mouseY));
+  }
+
+  p5.keyPressed = () => {
+    if (p5.keyCode == p5.ESCAPE) {
+      flock.setTarget(undefined);
+    }
   }
 };
 
