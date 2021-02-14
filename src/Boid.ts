@@ -1,6 +1,7 @@
 import P5 from "p5";
 import Flock from "./Flock";
 import { BORDER_BUFFER } from "./index";
+import { ThemeManager } from "./Theme";
 
 export default class Boid {
   static DEFAULT_MAX_SPEED = 2;
@@ -35,25 +36,22 @@ export default class Boid {
     this.acceleration = p5.createVector(0, 0);
   }
 
-  vertices() {
-    return [
-      [-1, -1],
-      [1, -1],
-      [0, 1]
-    ];
-  }
-
-  show() {
+  show(redStroke: boolean = false) {
     const p5 = this._p5;
     p5.push();
     p5.translate(this.position);
     p5.scale(this._config.size);
     p5.rotate(this.theta);
-    p5.noStroke();
+    if (redStroke) {
+      p5.stroke(255, 0, 0);
+      p5.strokeWeight(0.1);
+    } else {
+      p5.noStroke();
+    }
     p5.fill(this._config.color);
     p5.beginShape();
 
-    const vertices = this.vertices();
+    const vertices = ThemeManager.getBoidVertices();
     vertices.forEach(([x, y]) => {
       p5.vertex(x, y);
     });
@@ -120,9 +118,9 @@ export default class Boid {
       return borderDist < dist ? [border, borderDist] : curr;
     }, [right, P5.Vector.dist(this.position, right)]);
     let steer = this._p5.createVector(0, 0);
-    if (P5.Vector.dist(this.position, nearestBorder) < BORDER_BUFFER) {
+    if (P5.Vector.dist(this.position, nearestBorder) <= BORDER_BUFFER) {
       // If component of velocity in direction of border is not positive then apply no force
-      if (P5.Vector.dot(this.velocity, P5.Vector.sub(this.position, nearestBorder)) <= 0) {
+      if (P5.Vector.dot(this.velocity, P5.Vector.sub(this.position, nearestBorder)) <= this._config.maxSpeed) {
         steer = this.avoid(nearestBorder, BORDER_BUFFER, 0);
       }
     }
@@ -208,6 +206,11 @@ export default class Boid {
       const steer = this.avoid(this._flock.target);
       this.applyForce(steer.normalize().mult(2));
     }
+
+    this._flock?.predators.forEach(predator => {
+      const steer = this.avoid(predator.position);
+      this.applyForce(steer.normalize().mult(2));
+    });
     
     this.applyForce(this.jitter().normalize().mult(0.1));
     this.applyForce(this.avoidBorders().normalize().mult(2));

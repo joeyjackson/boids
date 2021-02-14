@@ -1,7 +1,6 @@
 import P5 from "p5";
-import { THEME, Theme } from "./index";
 import Boid, { BoidConfig } from "./Boid";
-import { Fish } from "./Fish";
+import { Predator } from "./Predator";
 
 export default class Flock {
   static DEFAULT_SEPARATION_RADIUS = 15.0;
@@ -11,25 +10,17 @@ export default class Flock {
   _p5: P5;
   _config: FlockConfig;
 
-  boids: Boid[];
+  boids: Boid[] = [];
+  predators: Predator[] = [];
   target: P5.Vector | undefined = undefined;
 
   constructor(p5: P5, config: FlockConfig = new FlockConfig()) {
     this._p5 = p5;
-    this.boids = [];
     this._config = config;
     for (let i = 0; i < config.initialFlockSize; i++) {
       const randomPos = p5.createVector(p5.random(0, p5.width), p5.random(0, p5.height));
       const randomVel = P5.Vector.random2D().mult(config.boidMaxSpeed * p5.random(0, 1));
-      let boid: Boid;
-      switch (THEME) {
-        case Theme.FISH:
-          boid = new Fish(p5, config.toBoidConfig(), this, randomPos, randomVel);
-          break;
-        case Theme.NONE:
-          boid = new Boid(p5, config.toBoidConfig(), this, randomPos, randomVel);
-          break;
-      } 
+      const boid = new Boid(p5, config.toBoidConfig(), this, randomPos, randomVel);
       this.addBoid(boid);
     }
   }
@@ -42,6 +33,10 @@ export default class Flock {
     this.boids.push(boid);
   }
 
+  addPredator(predator: Predator) {
+    this.predators.push(predator);
+  }
+
   update() {
     this.boids.forEach(boid => boid.update());
   }
@@ -52,11 +47,6 @@ export default class Flock {
       p5.fill("red");
       p5.noStroke();
       p5.ellipse(this.target.x, this.target.y, 3);
-      // p5.noFill();
-      // p5.stroke("black");
-      // p5.ellipse(this.target.x, this.target.y, this._config.boidFullAvoidanceRadius * 2);
-      // p5.stroke("gray");
-      // p5.ellipse(this.target.x, this.target.y, (this._config.boidFullAvoidanceRadius + this._config.boidRampAvoidanceRadius) * 2);
     }
     this.boids.forEach(boid => boid.show());
   }

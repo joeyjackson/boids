@@ -1,33 +1,34 @@
 import P5 from "p5";
-import Flock, { FlockConfig } from "./Flock";
 import "./styles/style.scss";
-
-export const enum Theme {
-  NONE,
-  FISH,
-}
+import Flock, { FlockConfig } from "./Flock";
+import { ThemeManager, changeThemeButton } from "./Theme";
+import { Predator, PredatorConfig } from "./Predator";
 
 export const BORDER_BUFFER = 50;
-
-export let THEME: Theme = Theme.FISH;
-
-const changeTheme = (restartCallback: () => void) => {
-  return () => {
-    switch(THEME) {
-      case Theme.FISH:
-        THEME = Theme.NONE;
-        break;
-      case Theme.NONE:
-        THEME = Theme.FISH;
-        break;
-    }
-    restartCallback();
-  }
-}
-
-const changeThemeButton = document.getElementById("changeThemeButton");
+const PREDATOR_SEPARATION = 30;
 
 const sketch = (p5: P5) => {
+  const WIDTH = 800;
+  const HEIGHT = 500;
+  let flocks: Flock[];
+  let predators: Predator[];
+  let predatorFlock: Flock;
+
+  const predatorConfigs: PredatorConfig[] = [
+    new PredatorConfig()
+      .setColor("black")
+      .setSize(16)
+      .setMaxSpeed(1.2)
+      .setMaxForce(0.4)
+      .setJitterScale(0),
+    new PredatorConfig()
+      .setColor("black")
+      .setSize(16)
+      .setMaxSpeed(1.2)
+      .setMaxForce(0.4)
+      .setJitterScale(0)
+  ]
+
   const flockConfigs: FlockConfig[] = [
     new FlockConfig()
       .setInitialFlockSize(10)
@@ -53,37 +54,40 @@ const sketch = (p5: P5) => {
       .setBoidMaxSpeed(2.5)
       .setBoidMaxForce(1)
       .setSeparationRadius(8),
-  ]
-  let flocks: Flock[];
-  const WIDTH = 800;
-  const HEIGHT = 500;
+  ];
 
-  const resetFlocks = () => {
+  const reset = () => {
+    predatorFlock = new Flock(p5, new FlockConfig().setSeparationRadius(PREDATOR_SEPARATION));
     flocks = flockConfigs.map(config => new Flock(p5, config));
+    predators = predatorConfigs.map(config => {
+      const randomPos = p5.createVector(p5.random(0, p5.width), p5.random(0, p5.height));
+      const randomVel = P5.Vector.random2D().mult(config.maxSpeed);
+      const predator = new Predator(p5, config, predatorFlock, randomPos, randomVel, flocks);
+      predatorFlock.addBoid(predator);
+      return predator;
+    });
+    flocks.forEach(flock => flock.predators = predators);
   }
 
 	p5.setup = () => {
 		const canvas = p5.createCanvas(WIDTH, HEIGHT);
     canvas.parent("canvas");
     if (changeThemeButton !== null) {
-      changeThemeButton.onclick = changeTheme(resetFlocks);
+      changeThemeButton.onclick = ThemeManager.changeTheme;
     }
 
-    resetFlocks();
+    reset();
 	};
 
 	p5.draw = () => {
-    switch (THEME) {
-      case Theme.FISH:
-        p5.background(18, 185, 227);
-        break;
-      case Theme.NONE:
-        p5.background(128);
-        break;
-    }
+    p5.background(ThemeManager.getBackgroundColor());
     flocks.forEach(flock => {
       flock.update();
       flock.show();
+    });
+    predators.forEach(predator => {
+      predator.update();
+      predator.show();
     });
   };
   
@@ -106,15 +110,18 @@ const sketch = (p5: P5) => {
   }
   
   const setTargets = () => {
+    const v = p5.createVector(p5.mouseX, p5.mouseY)
     flocks.forEach(flock => {
-      flock.setTarget(p5.createVector(p5.mouseX, p5.mouseY));
+      flock.setTarget(v);
     });
+    predatorFlock.setTarget(v)
   }
 
   const clearTargets = () => {
     flocks.forEach(flock => {
       flock.setTarget(undefined);
     });
+    predatorFlock.setTarget(undefined);
   }
 };
 
