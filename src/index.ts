@@ -1,38 +1,120 @@
 import P5 from "p5";
-import Boid from "./Boid";
-import Flock from "./Flock";
+import Flock, { FlockConfig } from "./Flock";
 import "./styles/style.scss";
 
+export const enum Theme {
+  NONE,
+  FISH,
+}
+
+export const BORDER_BUFFER = 50;
+
+export let THEME: Theme = Theme.FISH;
+
+const changeTheme = (restartCallback: () => void) => {
+  return () => {
+    switch(THEME) {
+      case Theme.FISH:
+        THEME = Theme.NONE;
+        break;
+      case Theme.NONE:
+        THEME = Theme.FISH;
+        break;
+    }
+    restartCallback();
+  }
+}
+
+const changeThemeButton = document.getElementById("changeThemeButton");
+
 const sketch = (p5: P5) => {
-  const flock: Flock = new Flock(p5);
-  const NUM_BOIDS = 120;
+  const flockConfigs: FlockConfig[] = [
+    new FlockConfig()
+      .setInitialFlockSize(10)
+      .setBoidColor("purple")
+      .setBoidSize(8)
+      .setBoidMaxSpeed(1.5)
+      .setBoidJitterScale(0)
+      .setSeparationRadius(25)
+      .setAlignmentRadius(45)
+      .setCohesionRadius(45),
+    new FlockConfig()
+      .setInitialFlockSize(20)
+      .setBoidColor("salmon")
+      .setBoidSize(6),
+    new FlockConfig()
+      .setInitialFlockSize(50)
+      .setBoidColor("red")
+      .setBoidSize(4),
+    new FlockConfig()
+      .setInitialFlockSize(80)
+      .setBoidColor("yellow")
+      .setBoidSize(3)
+      .setBoidMaxSpeed(2.5)
+      .setBoidMaxForce(1)
+      .setSeparationRadius(8),
+  ]
+  let flocks: Flock[];
   const WIDTH = 800;
   const HEIGHT = 500;
+
+  const resetFlocks = () => {
+    flocks = flockConfigs.map(config => new Flock(p5, config));
+  }
 
 	p5.setup = () => {
 		const canvas = p5.createCanvas(WIDTH, HEIGHT);
     canvas.parent("canvas");
-
-		for (let i = 0; i < NUM_BOIDS; i++) {
-      const boid = new Boid(p5, flock, p5.createVector(p5.random(0, WIDTH), p5.random(0, HEIGHT)));
-			flock.addBoid(boid);
+    if (changeThemeButton !== null) {
+      changeThemeButton.onclick = changeTheme(resetFlocks);
     }
+
+    resetFlocks();
 	};
 
 	p5.draw = () => {
-    p5.background(18, 185, 227);
-		flock.update();
-		flock.show();
+    switch (THEME) {
+      case Theme.FISH:
+        p5.background(18, 185, 227);
+        break;
+      case Theme.NONE:
+        p5.background(128);
+        break;
+    }
+    flocks.forEach(flock => {
+      flock.update();
+      flock.show();
+    });
   };
   
   p5.mousePressed = () => {
-    flock.setTarget(p5.createVector(p5.mouseX, p5.mouseY));
+    setTargets();
+  }
+
+  p5.mouseDragged = () => {
+    setTargets();
+  }
+
+  p5.mouseReleased = () => {
+    clearTargets();
   }
 
   p5.keyPressed = () => {
     if (p5.keyCode == p5.ESCAPE) {
-      flock.setTarget(undefined);
+      clearTargets();
     }
+  }
+  
+  const setTargets = () => {
+    flocks.forEach(flock => {
+      flock.setTarget(p5.createVector(p5.mouseX, p5.mouseY));
+    });
+  }
+
+  const clearTargets = () => {
+    flocks.forEach(flock => {
+      flock.setTarget(undefined);
+    });
   }
 };
 
