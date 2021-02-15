@@ -56,7 +56,6 @@ export class Predator extends Boid {
 
   boost() {
     if (this._isBoosting === false) {
-      console.log("boost");
       this.doBoost();
     }
   }

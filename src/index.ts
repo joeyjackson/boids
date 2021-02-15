@@ -8,7 +8,7 @@ export const BORDER_BUFFER = 50;
 const PREDATOR_SEPARATION = 30;
 
 const sketch = (p5: P5) => {
-  const WIDTH = 800;
+  const WIDTH = window.innerWidth < 800 ? window.innerWidth : 800;
   const HEIGHT = 500;
   let flocks: Flock[];
   let predators: Predator[];
@@ -122,6 +122,11 @@ const sketch = (p5: P5) => {
       flock.setTarget(undefined);
     });
     predatorFlock.setTarget(undefined);
+  }
+
+  p5.windowResized = () => {
+    const newWidth = window.innerWidth < 800 ? window.innerWidth : 800;
+    p5.resizeCanvas(newWidth, HEIGHT);
   }
 };
 
