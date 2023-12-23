@@ -86,14 +86,15 @@ export default class Boid {
     const distToTarget = P5.Vector.dist(this.position, target);
     const awayFromTarget = P5.Vector.sub(this.position, target).normalize();
 
-    let steer: P5.Vector;
+    let steer: P5.Vector = new P5.Vector();
     if (distToTarget < fullAvoidanceRadius) {
-      const desiredVelocity = P5.Vector.mult(awayFromTarget, this._config.maxSpeed);
+      let desiredVelocity = new P5.Vector();
+      P5.Vector.mult(awayFromTarget, this._config.maxSpeed, desiredVelocity);
       steer = P5.Vector.sub(desiredVelocity, this.velocity);
     } else if (distToTarget < (fullAvoidanceRadius + rampAvoidanceRadius)) {
       const rampDist = distToTarget - fullAvoidanceRadius;
       const rampPower = this._p5.map(rampDist, 0, rampAvoidanceRadius, 0, this._config.maxSpeed);
-      steer = P5.Vector.mult(awayFromTarget, rampPower); 
+      P5.Vector.mult(awayFromTarget, rampPower, steer); 
     } else {
       steer = this._p5.createVector(0, 0);
     }
